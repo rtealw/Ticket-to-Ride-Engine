@@ -1128,6 +1128,18 @@ class Game:
 	
 		player = self.players[pnum]
 		player_graph = self.player_graph(pnum)
+		
+		result = {"completed" : [],
+				  "uncompleted" : [],
+				  "routes" : []}
+
+		def handleResult(input, type, result):
+			description = {'city1': input[0],
+						   'city2': input[1],
+						   'weight' : input[2]}
+			edge_description = sorted(input[:2])[0] + '/' + sorted(input[:2])[1]
+			result[type] = result[type] + [edge_description]
+			return result
 	
 		for destination in player.hand_destination_cards:
 			try:
@@ -1152,7 +1164,10 @@ class Game:
 							for key in available_nodes:
 								for country in available_nodes[key]:
 									if nx.has_path(player_graph, destination.destinations[0], country):
-										print(str(destination.destinations) + ' was completed! +' + str(destination.points))
+										#print(str(destination.destinations) + ' was completed! +' + str(destination.points))
+										result = handleResult(input = destination.destinations + [destination.points],
+													          type = "completed",
+													          result = result)
 										scored = True
 										break
 					elif destination.type == 'country':
@@ -1163,20 +1178,37 @@ class Game:
 
 								for country in available_nodes[key]:
 									if nx.has_path(player_graph, start, country):
-										print(str(destination.destinations) + ' was completed! +' + str(destination.points))
+										#print(str(destination.destinations) + ' was completed! +' + str(destination.points))
+										result = handleResult(input = destination.destinations + [destination.points],
+													          type = "completed",
+													          result = result)	
 										scored = True
 										break
 
 					if not scored:
-						print(str(destination.destinations) + ' was not completed! -' + str(destination.points))
+						#print(str(destination.destinations) + ' was not completed! -' + str(destination.points))
+						result = handleResult(input = destination.destinations + [destination.points],
+									          type = "uncompleted",
+									          result = result)
+	
 			except:
 				try:
 					if nx.has_path(player_graph, destination.destinations[0], destination.destinations[1]):
-						print(str(destination.destinations) + ' was completed! +' + str(destination.points))
+						#print(str(destination.destinations) + ' was completed! +' + str(destination.points))
+						result = handleResult(input = destination.destinations + [destination.points],
+								              type = "completed",
+								              result = result)
 					else:
-						print(str(destination.destinations) + ' was not completed! -' + str(destination.points))
+						#print(str(destination.destinations) + ' was not completed! -' + str(destination.points))
+						result = handleResult(input = destination.destinations + [destination.points],
+								              type = "uncompleted",
+								              result = result)
+	
 				except:
-					print(str(destination.destinations) + ' was not completed! -' + str(destination.points))
+					#print(str(destination.destinations) + ' was not completed! -' + str(destination.points))
+					result = handleResult(input = destination.destinations + [destination.points],
+				  						  type = "uncompleted",
+				  						  result = result)
 
 		visited = []
 		for node1 in self.board.graph:
@@ -1185,7 +1217,13 @@ class Game:
 					if self.board.graph[node1][node2][edge]['owner'] == pnum:
 						visited.append((node1, node2))
 						if not (node2, node1) in visited:
-							print(node1 + ", " + node2 + ": +" + str(self.point_table[self.board.graph[node1][node2][edge]['weight']]))
+							points = self.point_table[self.board.graph[node1][node2][edge]['weight']]
+							#print(node1 + ", " + node2 + ": +" + str(self.point_table[self.board.graph[node1][node2][edge]['weight']]))
+							result = handleResult(input = [node1, node2, points],
+												  type = "routes",
+												  result = result)
+		return result
+	
 		
 	def getDCardScore(self, pnum):
 		rscore = 0
