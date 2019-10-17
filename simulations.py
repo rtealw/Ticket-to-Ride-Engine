@@ -11,9 +11,8 @@ from longRouteJunkieAgent import *
 
 import time
 import random
+import copy
 
-board = Board(loadgraphfromfile("gameContent/usa.txt"))
-dest_deck_dict = destinationdeckdict(dest_list=loaddestinationdeckfromfile("gameContent/usa_destinations.txt"), board="usa")
 # board = pointer to object of class Board
 # point_table = dict that maps the number of trains used to how many points are awarded to the player (it sometimes changes between maps) (the table that is usually printed on the edge of the map)
 # destination_deck = Dict of all destination cards in the game (cards should be of class DestinationCard)
@@ -44,7 +43,9 @@ dest_deck_dict = destinationdeckdict(dest_list=loaddestinationdeckfromfile("game
 # Values for USA 1910 Variant with longest route and no globetrotter
 
 def simulate_once(player_agents, agent_names):
-	starting_time = time.time()
+	board = Board(loadgraphfromfile("gameContent/usa.txt"))
+	dest_deck_dict = destinationdeckdict(dest_list=loaddestinationdeckfromfile("gameContent/usa_destinations.txt"), board="usa")
+
 	player_list = [Player(hand=emptyCardDict(), number_of_trains=45, points=0) for i in range(len(player_agents))]
 	game_object = Game(board=board.copy(), point_table=point_table(), destination_deck=dest_deck_dict.copy(), train_deck=make_train_deck(number_of_color_cards=12, number_of_wildcards=14), players=player_list, current_player=0, variants=[3, 2, 3, 1, True, False, False, False, False, False, 4, 5, 2, 3, 2, 10, 15, 2, False])
 	game_object.setup()
@@ -69,48 +70,62 @@ def simulate_once(player_agents, agent_names):
 
 	#print("WINNER : ", gh.game.winner())
 	#print("Unclaimed Routes: ", gh.game.getUnclaimedRoutes())
-	print("Simulation time (seconds): " + str(round(time.time() - starting_time, 2)))
 	return game_result
 
-def simulate(iterations):
+def simulate_wrapper(player_agents, agent_names):
+	has_passed = False
+	while not has_passed:
+		try:
+			return simulate_once(player_agents, agent_names)
+		except:
+			print("exception :(")
+
+def simulate(iterations, starting_time):
 	four_agents = [HungryAgent(), PathAgent(), OneStepThinkerAgent(), LongRouteJunkieAgent()]
 	four_names = ['Hungry', 'Path', 'OneStepThinker', 'LongRouteJunkie']
 	results_product = {'completed' : {}, 'uncompleted' : {}, 'routes' : {}, 'players' : {}}
-	results_outcome = {'winning' : results_product.copy(), 'losing' : results_product.copy() }
-	results = { '4-player' : results_outcome.copy(), '2-player' : results_outcome.copy()}
+	results_outcome = {'winning' : copy.deepcopy(results_product), 'losing' : copy.deepcopy(results_product) }
+	results = { '4-player' : copy.deepcopy(results_outcome), '2-player' : copy.deepcopy(results_outcome)}
 
 	for i in range(iterations):
-		one_game  = simulate_once(player_agents = four_agents, agent_names = four_names)
+		one_game  = simulate_wrapper(player_agents = four_agents, agent_names = four_names)
 		one_game["players"] = four_names
 		results['4-player'] = process1Game(one_game, results['4-player'])
+		print("Iteration: " + str(i) + ", Time Elapsed: " + str(round(time.time() - starting_time, 2)))
 
 	for i in range(iterations):
 		two_names, two_agents = get2Agents(four_agents, four_names)
-		one_game = simulate_once(player_agents = two_agents, agent_names = two_names)
+		one_game = simulate_wrapper(player_agents = two_agents, agent_names = two_names)
 		one_game["players"] = two_names
 		results['2-player'] = process1Game(one_game, results['2-player'])
+		print("Iteration: " + str(i+iterations) + ", Time Elapsed: " + str(round(time.time() - starting_time, 2)))
 	return results
 
 def countFrequency(key, dictionary):
 	if key not in dictionary:
 		dictionary[key] = 0
+	initial = dictionary[key]
 	dictionary[key] += 1
+	if initial + 1 != dictionary[key]:
+		raise "did not correctly add"
 	return dictionary
 
 def processPlayerResults(player_results, results_product):
-	for route in player_results['routes']:
+	for route in set(player_results['routes']):
 		results_product['routes'] = countFrequency(route, results_product['routes'])
-	for completed in player_results['completed']:
+	for completed in set(player_results['completed']):
 		results_product['completed'] = countFrequency(completed, results_product['completed'])
-	for uncompleted in player_results['uncompleted']:
+	for uncompleted in set(player_results['uncompleted']):
 		results_product['uncompleted'] = countFrequency(uncompleted, results_product['uncompleted'])
 	return results_product
 
 def process1Game(one_game, results_outcome):
  	for player in one_game['players']:
 		if player in one_game['winners']:
+			print(one_game[player])
 			results_outcome['winning'] = processPlayerResults(one_game[player], results_outcome['winning'])
 			results_outcome['winning']['players'] = countFrequency(player, results_outcome['winning']['players'])
+			print(results_outcome['winning'])
 		else:
 			results_outcome['losing'] = processPlayerResults(one_game[player], results_outcome['losing'])
 			results_outcome['losing']['players'] = countFrequency(player, results_outcome['losing']['players'])
@@ -133,6 +148,8 @@ def get2Agents(four_agents, four_names):
 	return two_names, two_agents
 
 
-
-all_games = simulate(10)
-print(all_games)
+starting_time = time.time()
+all_games = simulate(1000, starting_time)
+text_file = open("output/output.txt", "a")
+text_file.write(str(all_games) + '\n')
+text_file.close()
