@@ -87,18 +87,29 @@ def simulate(iterations, starting_time):
 	results_outcome = {'winning' : copy.deepcopy(results_product), 'losing' : copy.deepcopy(results_product) }
 	results = { '4-player' : copy.deepcopy(results_outcome), '2-player' : copy.deepcopy(results_outcome)}
 
+	game_file = open("output/games.txt", "w")
+
 	for i in range(iterations):
 		one_game  = simulate_wrapper(player_agents = four_agents, agent_names = four_names)
 		one_game["players"] = four_names
 		results['4-player'] = process1Game(one_game, results['4-player'])
 		print("Iteration: " + str(i) + ", Time Elapsed: " + str(round(time.time() - starting_time, 2)))
+		game_file.write(str(one_game) + '\n')
 
 	for i in range(iterations):
-		two_names, two_agents = get2Agents(four_agents, four_names)
+		two_names, two_agents = get2Agents(four_agents, four_names, i)
 		one_game = simulate_wrapper(player_agents = two_agents, agent_names = two_names)
 		one_game["players"] = two_names
 		results['2-player'] = process1Game(one_game, results['2-player'])
 		print("Iteration: " + str(i+iterations) + ", Time Elapsed: " + str(round(time.time() - starting_time, 2)))
+		game_file.write(str(one_game) + '\n')
+
+	game_file.close()
+
+	summary_file = open("output/summary.txt", "a")
+	summary_file.write(str(results) + '\n')
+	summary_file.close()
+
 	return results
 
 def countFrequency(key, dictionary):
@@ -122,17 +133,17 @@ def processPlayerResults(player_results, results_product):
 def process1Game(one_game, results_outcome):
  	for player in one_game['players']:
 		if player in one_game['winners']:
-			print(one_game[player])
 			results_outcome['winning'] = processPlayerResults(one_game[player], results_outcome['winning'])
 			results_outcome['winning']['players'] = countFrequency(player, results_outcome['winning']['players'])
-			print(results_outcome['winning'])
 		else:
 			results_outcome['losing'] = processPlayerResults(one_game[player], results_outcome['losing'])
 			results_outcome['losing']['players'] = countFrequency(player, results_outcome['losing']['players'])
 	return results_outcome
 
-def get2Agents(four_agents, four_names):
-	two_names = random.sample(four_names, 2)
+def get2Agents(four_agents, four_names, i):
+	first_index = i//3 % 4
+	valid_choices = four_names[:first_index] + four_names[first_index + 1:]
+	two_names = [four_names[first_index], valid_choices[i % 3]]
 	two_agents = []
 	for name in two_names:
 		if name == 'Hungry':
@@ -149,7 +160,4 @@ def get2Agents(four_agents, four_names):
 
 
 starting_time = time.time()
-all_games = simulate(1000, starting_time)
-text_file = open("output/output.txt", "a")
-text_file.write(str(all_games) + '\n')
-text_file.close()
+simulate(1000, starting_time)
