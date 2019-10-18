@@ -14,12 +14,6 @@ def getTopXMostFrequent(freq_dict, top_x):
     for key in freq_dict.keys():
         keys.append(key)
         freqs.append(freq_dict[key])
-    ordered_keys = [x for _, x in sorted(zip(freqs,keys), key=lambda pair: pair[0])]
-    ordered_keys.reverse()
-    if ordered_keys != orderXbyY(keys, freqs):
-        print(orderd_keys)
-        print(orderXbyY(keys, freqs))
-        raise "not equal!"
     ordered_keys = orderXbyY(keys, freqs)
     return ordered_keys[:top_x+1]
 
