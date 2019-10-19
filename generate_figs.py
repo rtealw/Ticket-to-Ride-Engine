@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from collections import OrderedDict
+import os
 
 def orderXbyY(X, Y):
     ordered_X = [x for _, x in sorted(zip(Y,X), key = lambda pair: pair[0])]
@@ -34,7 +35,9 @@ def generateFigure(keys, freq2, freq4, title, limit):
         loc=0,
         title="Players"
     )
-    plt.show()
+    directory = "{}/output/figures/".format(os.getcwd())
+    filename = "{}.svg".format(title.replace(" ", "").replace("'", ""))
+    plt.savefig(directory + filename)
 
 desirables = [['losing', 'uncompleted'], ['winning', 'routes'], ['winning', 'completed']]
 desirable_titles = [
@@ -43,12 +46,7 @@ desirable_titles = [
     "Most Common Completed Destination Tickets in Winners' Hands"
 ]
 
-def generateFigures(filename, limit):
-    file_name = 'output/{}.txt'.format(filename)
-    text_file = open(file_name, 'r')
-    summary = eval(text_file.read())
-    text_file.close()
-
+def generateFigures(summary, limit):
     for i in range(len(desirables)):
         desirable = desirables[i]
         freq_dict2 = summary['2-player'][desirable[0]][desirable[1]]
@@ -73,4 +71,12 @@ def generateFigures(filename, limit):
             limit = limit
         )
 
-generateFigures(filename='summary', limit=5)
+def readAndGenerate(filename, limit):
+    file_name = 'output/{}.txt'.format(filename)
+    text_file = open(file_name, 'r')
+    summaries = text_file.readlines()
+    for summary in summaries:
+        generateFigures(summary = eval(summary), limit=limit)
+    text_file.close()
+
+readAndGenerate(filename='summary', limit=5)
