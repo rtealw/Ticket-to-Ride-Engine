@@ -25,7 +25,7 @@ def shortenEdge(long_descriptions):
     #return long_descriptions
     return result
 
-def generateFigure(keys, freq2, freq4, title, limit):
+def generateFigure(keys, freq2, freq4, title, filename, limit):
     df = pd.DataFrame(np.vstack((freq2, freq4)).T, index = keys)
     df.plot.barh(color = ['black', 'gold'])
     plt.title(title)
@@ -35,8 +35,8 @@ def generateFigure(keys, freq2, freq4, title, limit):
         loc=0,
         title="Players"
     )
-    directory = "{}/output/figures/".format(os.getcwd())
-    filename = "{}.svg".format(title.replace(" ", "").replace("'", ""))
+    # set up for my file system
+    directory = "{}/../Ticket-to-Ride/paper/figures/".format(os.getcwd())
     plt.savefig(directory + filename)
 
 desirables = [['losing', 'uncompleted'], ['winning', 'routes'], ['winning', 'completed']]
@@ -45,6 +45,8 @@ desirable_titles = [
     "Most Common Routes in Winners' Hands",
     "Most Common Completed Destination Tickets in Winners' Hands"
 ]
+
+filenames = ["uncompleted", "routes", "completed"]
 
 def generateFigures(summary, limit):
     for i in range(len(desirables)):
@@ -62,12 +64,14 @@ def generateFigures(summary, limit):
         ordered_freq2 = orderXbyY(freq2, sum_freq)
         ordered_freq4 = orderXbyY(freq4, sum_freq)
         title = desirable_titles[i]
+        filename = "{}.eps".format(filenames[i])
 
         generateFigure(
             keys=ordered_keys,
             freq2=ordered_freq2,
             freq4=ordered_freq4,
             title=title,
+            filename = filename,
             limit = limit
         )
 
