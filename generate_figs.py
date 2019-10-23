@@ -37,6 +37,7 @@ def generateFigure(keys, freq2, freq4, title, filename, limit):
     )
     # set up for my file system
     directory = "{}/../Ticket-to-Ride/paper/figures/".format(os.getcwd())
+    plt.tight_layout()
     plt.savefig(directory + filename)
 
 desirables = [['losing', 'uncompleted'], ['winning', 'routes'], ['winning', 'completed']]
