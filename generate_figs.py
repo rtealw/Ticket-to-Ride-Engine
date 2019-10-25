@@ -18,11 +18,11 @@ def getTopXMostFrequent(freq_dict, top_x):
     ordered_keys = orderXbyY(keys, freqs)
     return ordered_keys[:top_x+1]
 
-def generateFigure(keys, freq2, freq4, title, filename):
+def generateFigure(keys, freq2, freq4, title, filename, colors, xlabel, include_lines):
     df = pd.DataFrame(np.vstack((freq2, freq4)).T, index = keys)
-    df.plot.barh(color = ['gold', 'black'])
+    df.plot.barh(color = colors)
     plt.title(title)
-    plt.xlabel("Proportion of Wins")
+    plt.xlabel(xlabel)
     plt.legend(
         ['Two', 'Four'],
         loc=0,
@@ -31,9 +31,10 @@ def generateFigure(keys, freq2, freq4, title, filename):
     # set up for my file system
     directory = "{}/../Ticket-to-Ride/paper/figures/".format(os.getcwd())
     plt.tight_layout()
-    plt.xlim(0, max(freq2 + freq4) * 1.3)
-    plt.axvline(x=.25,color='red', linestyle='--')
-    plt.axvline(x=.5,color='red', linestyle='--')
+    plt.xlim(0, max(freq2 + freq4) * 1.1)
+    if include_lines:
+        plt.axvline(x=.25,color='red', linestyle='--')
+        plt.axvline(x=.5,color='red', linestyle='--')
     plt.savefig(directory + filename)
 
 desirables = [['losing', 'uncompleted'], ['winning', 'routes'], ['winning', 'completed']]
@@ -76,7 +77,8 @@ def readAndGenerate(filename, limit, num_games):
     summaries = text_file.readlines()
     for summary in summaries:
         #generateFigures(summary = eval(summary), limit=limit, num_games=num_games)
-        outcomeFigures(summary = eval(summary), limit=limit, num_games=num_games)
+        ticketsFigure(summary = eval(summary), limit=limit, num_games=num_games)
+        routesFigure(summary = eval(summary), limit=30, num_games=num_games)
     text_file.close()
 
 def combineDicts(dict1, dict2):
@@ -102,25 +104,50 @@ def getProportions(won, lost):
         keys.append(capAllWords(key))
     return win_prop, keys
 
-def outcomeFigures(summary, limit, num_games):
+def ticketsFigure(summary, limit, num_games):
     # Destination Tickets
     combined_two_won = combineDicts(summary['2-player']['winning']['uncompleted'], summary['2-player']['winning']['completed'])
     combined_two_lost = combineDicts(summary['2-player']['losing']['uncompleted'], summary['2-player']['losing']['completed'])
     combined_four_won = combineDicts(summary['4-player']['winning']['uncompleted'], summary['4-player']['winning']['completed'])
     combined_four_lost= combineDicts(summary['4-player']['losing']['uncompleted'], summary['4-player']['losing']['completed'])
     prop_two, keys_two = getProportions(won=combined_two_won, lost=combined_two_lost)
-    prop_four, keys_four= getProportions(won=combined_four_won, lost=combined_four_lost)
+    prop_four, keys_four = getProportions(won=combined_four_won, lost=combined_four_lost)
     if keys_two != keys_four:
         raise "keys_two and keys_four not equal"
     generateFigure(
-        keys=keys_two,
-        freq2=prop_two,
-        freq4=prop_four,
+        keys=orderXbyY(keys_two, prop_two),
+        freq2=orderXbyY(prop_two, prop_two),
+        freq4=orderXbyY(prop_four, prop_two),
         title="Destination Tickets",
-        filename = "destination_tickets.eps"
+        filename = "destination_tickets.eps",
+        colors = ['gold', 'black'],
+        xlabel = "Proportion of Wins",
+        include_lines = True
     )
 
-def genOutcomeFigure(keys, prop_two, prop_four, title, filename):
-    pass
+def routesFigure(summary, limit, num_games):
+    combined_two = combineDicts(
+        summary['2-player']['winning']['routes'],
+        summary['2-player']['losing']['routes']
+    )
+    combined_four = combineDicts(
+        summary['4-player']['winning']['routes'],
+        summary['4-player']['losing']['routes']
+    )
+    prop_two = [float(combined_two[key])/num_games for key in combined_two.keys()]
+    prop_four = [float(combined_four[key])/num_games for key in combined_four.keys()]
+    keys = [capAllWords(key) for key in combined_two.keys()]
+    if combined_two.keys() != combined_four.keys():
+        raise "keys not equal!"
+    generateFigure(
+        keys=orderXbyY(keys, prop_four)[:limit],
+        freq2=orderXbyY(prop_two, prop_four)[:limit],
+        freq4=orderXbyY(prop_four, prop_four)[:limit],
+        title="Routes",
+        filename = "routes.eps",
+        colors = ['black', 'gold'],
+        xlabel = "Claims per Game",
+        include_lines = False
+    )
 
 readAndGenerate(filename='summary', limit=5, num_games=1000)
