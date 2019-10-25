@@ -122,7 +122,7 @@ def countFrequency(key, dictionary):
 	return dictionary
 
 def processPlayerResults(player_results, results_product):
-	for route in set(player_results['routes']):
+	for route in player_results['routes']:
 		results_product['routes'] = countFrequency(route, results_product['routes'])
 	for completed in set(player_results['completed']):
 		results_product['completed'] = countFrequency(completed, results_product['completed'])
@@ -160,4 +160,4 @@ def get2Agents(four_agents, four_names, i):
 
 
 starting_time = time.time()
-simulate(1000, starting_time)
+simulate(10, starting_time)
