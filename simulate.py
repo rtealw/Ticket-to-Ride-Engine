@@ -80,65 +80,31 @@ def simulate_wrapper(player_agents, agent_names):
 		except:
 			print("exception :(")
 
-def simulate(iterations, starting_time):
+def simulate(iterations, starting_time, filename):
 	four_agents = [HungryAgent(), PathAgent(), OneStepThinkerAgent(), LongRouteJunkieAgent()]
 	four_names = ['Hungry', 'Path', 'OneStepThinker', 'LongRouteJunkie']
 	results_product = {'completed' : {}, 'uncompleted' : {}, 'routes' : {}, 'players' : {}}
 	results_outcome = {'winning' : copy.deepcopy(results_product), 'losing' : copy.deepcopy(results_product) }
 	results = { '4-player' : copy.deepcopy(results_outcome), '2-player' : copy.deepcopy(results_outcome)}
 
-	game_file = open("output/games.txt", "w")
+	game_file = open("output/{}.txt".format(filename), "w")
 
 	for i in range(iterations):
 		one_game  = simulate_wrapper(player_agents = four_agents, agent_names = four_names)
 		one_game["players"] = four_names
-		results['4-player'] = process1Game(one_game, results['4-player'])
 		print("Iteration: " + str(i) + ", Time Elapsed: " + str(round(time.time() - starting_time, 2)))
 		game_file.write(str(one_game) + '\n')
 
 	for i in range(iterations):
-		two_names, two_agents = get2Agents(four_agents, four_names, i)
+		two_names, two_agents = get2Agents(four_agents=four_agents, four_names=four_names, i=i)
 		one_game = simulate_wrapper(player_agents = two_agents, agent_names = two_names)
 		one_game["players"] = two_names
-		results['2-player'] = process1Game(one_game, results['2-player'])
 		print("Iteration: " + str(i+iterations) + ", Time Elapsed: " + str(round(time.time() - starting_time, 2)))
 		game_file.write(str(one_game) + '\n')
 
 	game_file.close()
 
-	summary_file = open("output/summary.txt", "a")
-	summary_file.write(str(results) + '\n')
-	summary_file.close()
-
 	return results
-
-def countFrequency(key, dictionary):
-	if key not in dictionary:
-		dictionary[key] = 0
-	initial = dictionary[key]
-	dictionary[key] += 1
-	if initial + 1 != dictionary[key]:
-		raise "did not correctly add"
-	return dictionary
-
-def processPlayerResults(player_results, results_product):
-	for route in player_results['routes']:
-		results_product['routes'] = countFrequency(route, results_product['routes'])
-	for completed in set(player_results['completed']):
-		results_product['completed'] = countFrequency(completed, results_product['completed'])
-	for uncompleted in set(player_results['uncompleted']):
-		results_product['uncompleted'] = countFrequency(uncompleted, results_product['uncompleted'])
-	return results_product
-
-def process1Game(one_game, results_outcome):
- 	for player in one_game['players']:
-		if player in one_game['winners']:
-			results_outcome['winning'] = processPlayerResults(one_game[player], results_outcome['winning'])
-			results_outcome['winning']['players'] = countFrequency(player, results_outcome['winning']['players'])
-		else:
-			results_outcome['losing'] = processPlayerResults(one_game[player], results_outcome['losing'])
-			results_outcome['losing']['players'] = countFrequency(player, results_outcome['losing']['players'])
-	return results_outcome
 
 def get2Agents(four_agents, four_names, i):
 	first_index = i//3 % 4
@@ -160,4 +126,4 @@ def get2Agents(four_agents, four_names, i):
 
 
 starting_time = time.time()
-simulate(10, starting_time)
+simulate(iterations=10, starting_time=starting_time, filename="games")
