@@ -87,7 +87,7 @@ def simulate(iterations, starting_time, filename):
 	results_outcome = {'winning' : copy.deepcopy(results_product), 'losing' : copy.deepcopy(results_product) }
 	results = { '4-player' : copy.deepcopy(results_outcome), '2-player' : copy.deepcopy(results_outcome)}
 
-	game_file = open("output/{}.txt".format(filename), "w")
+	game_file = open("output/{}.txt".format(filename), "a")
 
 	for i in range(iterations):
 		one_game  = simulate_wrapper(player_agents = four_agents, agent_names = four_names)
@@ -125,5 +125,5 @@ def get2Agents(four_agents, four_names, i):
 	return two_names, two_agents
 
 
-starting_time = time.time()
-simulate(iterations=10, starting_time=starting_time, filename="games")
+starting_time = time.time()f
+simulate(iterations=980, starting_time=starting_time, filename="games")

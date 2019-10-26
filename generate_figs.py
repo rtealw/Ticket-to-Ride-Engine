@@ -68,7 +68,7 @@ def postProcessTickets(dictionary, keys):
 def postProcessRoutes(dictionary, keys, num_games):
     array = []
     for key in keys:
-        appeared = 0 if key not in dictionary else float(dictionary[key]/num_games)
+        appeared = 0 if key not in dictionary else float(dictionary[key])/num_games
         array.append(appeared)
     return array
 
@@ -82,13 +82,20 @@ def readGamesAndGenerateFigures(filename, limit):
         '2-player' : {},
         '4-player' : {} 
     }
-    num_games = 0
+    num_games_two = num_games_four = 0
     games_file = open("output/{}.txt".format(filename), 'r')
     for game in games_file:
-        num_games += .5
-        tickets = addToTickets(tickets=tickets, game=eval(game))
-        routes = addToRoutes(routes=routes, game=eval(game))
+        game = eval(game)
+        if len(game['players']) == 2:
+            num_games_two += 1
+        else:
+            num_games_four += 1
+        tickets = addToTickets(tickets=tickets, game=game)
+        routes = addToRoutes(routes=routes, game=game)
     games_file.close()
+
+    print("Number of games with two players: {}".format(num_games_two))
+    print("Number of games with four players: {}".format(num_games_four))
 
     # Ticket Processing
     two_tickets = tickets['2-player']
@@ -101,8 +108,8 @@ def readGamesAndGenerateFigures(filename, limit):
 
     # Route Processing
     routes_keys = np.unique(routes['2-player'].keys() + routes['4-player'].keys())
-    routes_two = postProcessRoutes(dictionary=routes['2-player'], keys = routes_keys, num_games=num_games)
-    routes_four = postProcessRoutes(dictionary=routes['4-player'], keys = routes_keys, num_games=num_games)
+    routes_two = postProcessRoutes(dictionary=routes['2-player'], keys = routes_keys, num_games=num_games_two)
+    routes_four = postProcessRoutes(dictionary=routes['4-player'], keys = routes_keys, num_games=num_games_four)
 
     generateFigure(
         keys=[capAllWords(key) for key in orderXbyY(tickets_keys, tickets_two)],
@@ -126,4 +133,4 @@ def readGamesAndGenerateFigures(filename, limit):
         include_lines = False
     )
 
-readGamesAndGenerateFigures("past_games", limit = 30)
+readGamesAndGenerateFigures("games", limit = 30)
