@@ -72,6 +72,13 @@ def postProcessRoutes(dictionary, keys, num_games):
         array.append(appeared)
     return array
 
+def saveTicketWins(tickets_keys, tickets_two):
+    directory = "{}/../Ticket-to-Ride/".format(os.getcwd())
+    filename = "ticket_wins.txt"
+    ticket_file = open(directory + filename, 'w')
+    ticket_file.write(str(list(tickets_keys)) + '\n')
+    ticket_file.write(str(tickets_two) + '\n')
+    ticket_file.close()
 
 def readGamesAndGenerateFigures(filename, limit):
     tickets = {
@@ -105,6 +112,9 @@ def readGamesAndGenerateFigures(filename, limit):
     )
     tickets_two = postProcessTickets(two_tickets, tickets_keys)
     tickets_four = postProcessTickets(four_tickets, tickets_keys)
+
+    # Save Ticket Proportions
+    saveTicketWins(tickets_keys, tickets_two)
 
     # Route Processing
     routes_keys = np.unique(routes['2-player'].keys() + routes['4-player'].keys())
