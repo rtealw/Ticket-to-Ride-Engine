@@ -125,5 +125,5 @@ def get2Agents(four_agents, four_names, i):
 	return two_names, two_agents
 
 
-starting_time = time.time()f
-simulate(iterations=980, starting_time=starting_time, filename="games")
+starting_time = time.time()
+simulate(iterations=1000, starting_time=starting_time, filename="games")
