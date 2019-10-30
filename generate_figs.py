@@ -73,7 +73,7 @@ def postProcessRoutes(dictionary, keys, num_games):
     return array
 
 def saveTicketWins(keys, props, filename):
-    directory = "{}/../Ticket-to-Ride/".format(os.getcwd())
+    directory = "{}/../Ticket-to-Ride/scripts/input/".format(os.getcwd())
     ticket_file = open(directory + filename, 'w')
     ticket_file.write(str(list(keys)) + '\n')
     ticket_file.write(str(props) + '\n')
