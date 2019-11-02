@@ -89,8 +89,9 @@ def readGamesAndGenerateFigures(filename, limit):
         '4-player' : {} 
     }
     num_games_two = num_games_four = 0
-    games_file = open("output/{}.txt".format(filename), 'r')
-    for game in games_file:
+    games_file1 = open("output/{}1.txt".format(filename), 'r')
+    games_file2 = open("output/{}2.txt".format(filename), 'r')
+    for game in games_file1.readlines() + games_file2.readlines():
         game = eval(game)
         if len(game['players']) == 2:
             num_games_two += 1
@@ -98,7 +99,8 @@ def readGamesAndGenerateFigures(filename, limit):
             num_games_four += 1
         tickets = addToTickets(tickets=tickets, game=game)
         routes = addToRoutes(routes=routes, game=game)
-    games_file.close()
+    games_file1.close()
+    games_file2.close()
 
     print("Number of games with two players: {}".format(num_games_two))
     print("Number of games with four players: {}".format(num_games_four))
