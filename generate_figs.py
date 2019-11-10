@@ -72,12 +72,12 @@ def postProcessRoutes(dictionary, keys, num_games):
         array.append(appeared)
     return array
 
-def saveTicketWins(keys, props, filename):
+def saveProportions(keys, props, filename):
     directory = "{}/../Ticket-to-Ride/scripts/input/".format(os.getcwd())
-    ticket_file = open(directory + filename, 'w')
-    ticket_file.write(str(list(keys)) + '\n')
-    ticket_file.write(str(props) + '\n')
-    ticket_file.close()
+    file = open(directory + filename, 'w')
+    file.write(str(list(keys)) + '\n')
+    file.write(str(props) + '\n')
+    file.close()
 
 def readGamesAndGenerateFigures(filename, limit):
     tickets = {
@@ -91,7 +91,9 @@ def readGamesAndGenerateFigures(filename, limit):
     num_games_two = num_games_four = 0
     games_file1 = open("output/{}1.txt".format(filename), 'r')
     games_file2 = open("output/{}2.txt".format(filename), 'r')
-    for game in games_file1.readlines() + games_file2.readlines():
+    games_file3 = open("output/{}3.txt".format(filename), 'r')
+    games_file4 = open("output/{}4.txt".format(filename), 'r')
+    for game in games_file1.readlines() + games_file2.readlines() + games_file3.readlines() + games_file4.readlines():
         game = eval(game)
         if len(game['players']) == 2:
             num_games_two += 1
@@ -101,6 +103,8 @@ def readGamesAndGenerateFigures(filename, limit):
         routes = addToRoutes(routes=routes, game=game)
     games_file1.close()
     games_file2.close()
+    games_file3.close()
+    games_file4.close()
 
     print("Number of games with two players: {}".format(num_games_two))
     print("Number of games with four players: {}".format(num_games_four))
@@ -114,14 +118,16 @@ def readGamesAndGenerateFigures(filename, limit):
     tickets_two = postProcessTickets(two_tickets, tickets_keys)
     tickets_four = postProcessTickets(four_tickets, tickets_keys)
 
-    # Save Ticket Proportions
-    saveTicketWins(keys=tickets_keys, props=tickets_two, filename="tickets_two.txt")
-    saveTicketWins(keys=tickets_keys, props=tickets_four, filename="tickets_four.txt")
-
     # Route Processing
     routes_keys = np.unique(routes['2-player'].keys() + routes['4-player'].keys())
     routes_two = postProcessRoutes(dictionary=routes['2-player'], keys = routes_keys, num_games=num_games_two)
     routes_four = postProcessRoutes(dictionary=routes['4-player'], keys = routes_keys, num_games=num_games_four)
+
+    # Save Proportions
+    saveProportions(keys=tickets_keys, props=tickets_two, filename="tickets_two.txt")
+    saveProportions(keys=tickets_keys, props=tickets_four, filename="tickets_four.txt")
+    saveProportions(keys=routes_keys, props=routes_two, filename="routes_two.txt")
+    saveProportions(keys=routes_keys, props=routes_four, filename="routes_four.txt")
 
     generateFigure(
         keys=[capAllWords(key) for key in orderXbyY(tickets_keys, tickets_two)],
