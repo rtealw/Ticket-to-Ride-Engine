@@ -79,6 +79,19 @@ def saveProportions(keys, props, filename):
     file.write(str(props) + '\n')
     file.close()
 
+def anyRepeats(game):
+    repeats = False
+    for player in game['players']:
+        routes = game[player]['routes']
+        for route in routes:
+            if routes.count(route) > 1:
+                repeats = True
+                print("player", player)
+                print("route", route)
+    if repeats:
+        return True
+    return False
+
 def readGamesAndGenerateFigures(filename, limit):
     tickets = {
         '2-player' : {'win_count': {}, 'lose_count': {}},
@@ -95,6 +108,9 @@ def readGamesAndGenerateFigures(filename, limit):
     games_file4 = open("output/{}4.txt".format(filename), 'r')
     for game in games_file1.readlines() + games_file2.readlines() + games_file3.readlines() + games_file4.readlines():
         game = eval(game)
+        if anyRepeats(game):
+            print("game", game)
+            raise "Player owns both double routes!"
         if len(game['players']) == 2:
             num_games_two += 1
         else:
