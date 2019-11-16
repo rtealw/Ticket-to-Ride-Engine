@@ -12,6 +12,7 @@ from longRouteJunkieAgent import *
 import time
 import random
 import copy
+import numpy as np
 
 # board = pointer to object of class Board
 # point_table = dict that maps the number of trains used to how many points are awarded to the player (it sometimes changes between maps) (the table that is usually printed on the edge of the map)
@@ -80,15 +81,50 @@ def simulate_wrapper(player_agents, agent_names, point_table=point_table()):
 		except:
 			print("exception :(")
 
-def getLinearPointTable(alpha):
+def get_linear_point_table(alpha):
 	point_table = {}
 	for k in range(1,7):
 		point_table[k] = alpha*k
 	return point_table
 
-def simulateByPoints(iterations, filename):
-	alpha = 1.5
-	point_table = getLinearPointTable(alpha=alpha)
+def has_not_converged(prop_list, look_back, tolerance):
+	for i in range(1, look_back+1):
+		if np.abs(prop_list[-i] - prop_list[-1]) > tolerance:
+			return True
+	return False
+
+def simulate_one_by_points(look_back, tolerance, point_table=point_table()):
+	four_agents = [HungryAgent(), PathAgent(), OneStepThinkerAgent(), LongRouteJunkieAgent()]
+	four_names = ['Hungry', 'Path', 'OneStepThinker', 'LongRouteJunkie']
+	prop_win = []
+	win_count = {'Hungry' : 0, 'Path' : 0, 'OneStepThinker' : 0, 'LongRouteJunkie' : 0, 'total' : 0}
+	iterations = 0
+	while len(prop_win) < look_back or has_not_converged(prop_list=prop_win,look_back=look_back, tolerance=tolerance):
+		game = simulate_wrapper(player_agents=four_agents, agent_names=four_names, point_table=point_table)
+		for winner in game['winners']:
+			win_count[winner] += 1
+			win_count['total'] += 1
+		prop_win += [float(win_count['LongRouteJunkie']) / win_count['total']]
+		print "Iteration: {}, Proportion of Long Route Wins: {}".format(iterations, prop_win[-1])
+		iterations += 1
+	return win_count, iterations
+
+def simulate_by_points(filename="", look_back=100, start_alpha=1, stop_alpha=2.5, step_size=.1, tolerance=.01):
+	win_cumulative = {'Hungry':[], 'Path':[], 'OneStepThinker':[], 'LongRouteJunkie':[], 'alpha':[], 'iterations':[]}
+	four_names = ['Hungry', 'Path', 'OneStepThinker', 'LongRouteJunkie']
+	for alpha in np.arange(start_alpha, stop_alpha, step_size):
+		print "alpha: {}".format(alpha)
+		point_table = get_linear_point_table(alpha=alpha)
+		win_count, iterations = simulate_one_by_points(look_back=look_back, tolerance=tolerance, point_table=point_table)
+		# Save data
+		for name in four_names:
+			win_cumulative[name] += [float(win_count[name]) / win_count['total']]
+		win_cumulative['alpha'] += [alpha]
+		win_cumulative['iterations'] += [iterations]
+	if filename != "":
+		point_file = open('output/{}.txt'.format(filename), 'a')
+		point_file.write(str(win_cumulative) + '\n')
+		point_file.close()
 
 def simulate(iterations, starting_time, filename):
 	four_agents = [HungryAgent(), PathAgent(), OneStepThinkerAgent(), LongRouteJunkieAgent()]
@@ -135,5 +171,6 @@ def get2Agents(four_agents, four_names, i):
 	return two_names, two_agents
 
 
-starting_time = time.time()
-simulate(iterations=10000, starting_time=starting_time, filename="games")
+#starting_time = time.time()
+#simulate(iterations=10000, starting_time=starting_time, filename="games")
+simulate_by_points(filename="alpha_simulations")
