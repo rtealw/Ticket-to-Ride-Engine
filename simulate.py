@@ -12,7 +12,6 @@ from longRouteJunkieAgent import *
 import time
 import random
 import copy
-import numpy as np
 
 # board = pointer to object of class Board
 # point_table = dict that maps the number of trains used to how many points are awarded to the player (it sometimes changes between maps) (the table that is usually printed on the edge of the map)
@@ -87,9 +86,21 @@ def get_linear_point_table(alpha):
 		point_table[k] = alpha*k
 	return point_table
 
+def absolute(num):
+	if num > 0:
+		return num
+	return -1 * num
+
+def arange(start, stop, step):
+	result = []
+	iterations = int(float(stop-start)/step)
+	for i in range(iterations + 1):
+		result += [start + float(i) * step]
+	return result
+
 def has_not_converged(prop_list, look_back, tolerance):
 	for i in range(1, look_back+1):
-		if np.abs(prop_list[-i] - prop_list[-1]) > tolerance:
+		if absolute(prop_list[-i] - prop_list[-1]) > tolerance:
 			return True
 	return False
 
@@ -112,7 +123,7 @@ def simulate_one_by_points(look_back, tolerance, point_table=point_table()):
 def simulate_by_points(filename="", look_back=100, start_alpha=1, stop_alpha=2.5, step_size=.1, tolerance=.01):
 	win_cumulative = {'Hungry':[], 'Path':[], 'OneStepThinker':[], 'LongRouteJunkie':[], 'alpha':[], 'iterations':[]}
 	four_names = ['Hungry', 'Path', 'OneStepThinker', 'LongRouteJunkie']
-	for alpha in np.arange(start_alpha, stop_alpha, step_size):
+	for alpha in arange(start_alpha, stop_alpha, step_size):
 		print "alpha: {}".format(alpha)
 		point_table = get_linear_point_table(alpha=alpha)
 		win_count, iterations = simulate_one_by_points(look_back=look_back, tolerance=tolerance, point_table=point_table)
