@@ -324,13 +324,17 @@ class Board:
 	#city1 and city2 => string of the two cities that make up the route
 	#color => the color of the route
 	#number_of_players => the number of players in the current game
-	def get_free_connection(self, city1, city2, color, number_of_players=2, special_variant=False):
+	def get_free_connection(self, city1, city2, color, current_player, number_of_players=2, special_variant=False):
 		connections = self.get_connection(city1, city2)
 		locked = False
 		if number_of_players < 4 or (number_of_players == 3 and special_variant):
 			for c in connections:
 				if connections[c]['owner'] != -1:
 					locked = True
+
+		for c in connections:
+			if connections[c]['owner'] == current_player:
+				locked = True
 
 		if not locked:
 			for c in connections:
@@ -663,7 +667,7 @@ class Game:
 	#if the route is a gray route, pass color as the color you want to use to claim that route, for example:
 	#if you want to claim a gray route with blue cards, pass 'blue' as the color
 	def claimRoute(self, city1, city2, color):
-		edge = self.board.get_free_connection(city1, city2, color, self.number_of_players, self.switzerland_variant or self.nordic_countries_variant)
+		edge = self.board.get_free_connection(city1, city2, color, self.current_player, self.number_of_players, self.switzerland_variant or self.nordic_countries_variant)
 
 		if edge != None and edge['owner'] == -1:
 			route_color = edge['color'] if edge['color'] != 'GRAY' else color
@@ -1103,7 +1107,7 @@ class Game:
 							special_nordic_route = True
 	
 					for color in colors:
-						edge = self.board.get_free_connection(city1, city2, color, self.number_of_players, self.switzerland_variant or self.nordic_countries_variant)
+						edge = self.board.get_free_connection(city1, city2, color, self.current_player, self.number_of_players, self.switzerland_variant or self.nordic_countries_variant)
 
 						if edge != None:
 							if self.checkPlayerHandRequirements(player_index, edge['weight'], color, edge['ferries'], special_nordic_route) != False:
@@ -1255,7 +1259,7 @@ class Game:
 				visited.append((city1, city2))
 
 				for color in colors:
-					edge = self.board.get_free_connection(city1, city2, color, self.number_of_players, self.switzerland_variant or self.nordic_countries_variant)
+					edge = self.board.get_free_connection(city1, city2, color, self.current_player, self.number_of_players, self.switzerland_variant or self.nordic_countries_variant)
 
 					if edge != None:
 						unclaimed.add((city1, city2))

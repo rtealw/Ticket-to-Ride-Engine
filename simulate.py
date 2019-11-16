@@ -42,12 +42,12 @@ import copy
 #	position 18 => Boolean / use asia variant rules?
 # Values for USA 1910 Variant with longest route and no globetrotter
 
-def simulate_once(player_agents, agent_names):
+def simulate_once(player_agents, agent_names, point_table=point_table()):
 	board = Board(loadgraphfromfile("gameContent/usa.txt"))
 	dest_deck_dict = destinationdeckdict(dest_list=loaddestinationdeckfromfile("gameContent/usa_destinations.txt"), board="usa")
 
 	player_list = [Player(hand=emptyCardDict(), number_of_trains=45, points=0) for i in range(len(player_agents))]
-	game_object = Game(board=board.copy(), point_table=point_table(), destination_deck=dest_deck_dict.copy(), train_deck=make_train_deck(number_of_color_cards=12, number_of_wildcards=14), players=player_list, current_player=0, variants=[3, 2, 3, 1, True, False, False, False, False, False, 4, 5, 2, 3, 2, 10, 15, 2, False])
+	game_object = Game(board=board.copy(), point_table=point_table, destination_deck=dest_deck_dict.copy(), train_deck=make_train_deck(number_of_color_cards=12, number_of_wildcards=14), players=player_list, current_player=0, variants=[3, 2, 3, 1, True, False, False, False, False, False, 4, 5, 2, 3, 2, 10, 15, 2, False])
 	game_object.setup()
 
 	# game = object of class
@@ -72,13 +72,23 @@ def simulate_once(player_agents, agent_names):
 	#print("Unclaimed Routes: ", gh.game.getUnclaimedRoutes())
 	return game_result
 
-def simulate_wrapper(player_agents, agent_names):
+def simulate_wrapper(player_agents, agent_names, point_table=point_table()):
 	has_passed = False
 	while not has_passed:
 		try:
-			return simulate_once(player_agents, agent_names)
+			return simulate_once(player_agents=player_agents, agent_names=agent_names, point_table=point_table)
 		except:
 			print("exception :(")
+
+def getLinearPointTable(alpha):
+	point_table = {}
+	for k in range(1,7):
+		point_table[k] = alpha*k
+	return point_table
+
+def simulateByPoints(iterations, filename):
+	alpha = 1.5
+	point_table = getLinearPointTable(alpha=alpha)
 
 def simulate(iterations, starting_time, filename):
 	four_agents = [HungryAgent(), PathAgent(), OneStepThinkerAgent(), LongRouteJunkieAgent()]
@@ -126,4 +136,4 @@ def get2Agents(four_agents, four_names, i):
 
 
 starting_time = time.time()
-simulate(iterations=2, starting_time=starting_time, filename="games4")
+simulate(iterations=1, starting_time=starting_time, filename="testing2")
