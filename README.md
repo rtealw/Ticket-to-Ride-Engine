@@ -1,5 +1,4 @@
-# Ticket to Ride Simulation Engine
-![DOI](https://zenodo.org/badge/215415182.svg)
+# Ticket to Ride Simulation Engine ![DOI](https://zenodo.org/badge/215415182.svg)
 ### By R. Teal Witter
 
 
