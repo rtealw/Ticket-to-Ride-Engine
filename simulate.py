@@ -40,7 +40,7 @@ player_list = [Player(hand=emptyCardDict(), number_of_trains=45, points=0) for i
 #	position 17 => number of train cards draw on action (Usually 2)
 #	position 18 => Boolean / use asia variant rules?
 # Values for USA 1910 Variant with longest route and no globetrotter
-def run_game(agent_names, point_table={1:1, 2:2, 3:4, 4:7, 5:10, 6:15}):
+def run_game(agent_names = ["Hungry", "Path", "OneStepThinker", "LongRouteJunkie"], point_table={1:1, 2:2, 3:4, 4:7, 5:10, 6:15}):
 	agents = []
 	for agent_name in agent_names:
 		if agent_name == 'Hungry':
@@ -65,12 +65,17 @@ def run_game(agent_names, point_table={1:1, 2:2, 3:4, 4:7, 5:10, 6:15}):
 	# runnum = integer that gets appended to the log filename (useful if you are running multiple games in a loop)
 	# save = boolean that chooses to save (True), or not (False), the game logs
 	gh.play(runnum=0, save=False)
-	return gh.game.winner()
+	results = {}
+	for i in range(0, len(agent_names)):
+		#print "Player ", i, ":"
+		#gh.game.printScoring(i)
+		scoring, point_values = gh.game.getScoring(i)
+		results[agent_names[i]] = scoring
+	results['winners'] = gh.game.winner()
+	results['players'] = agent_names
+	
+	#print("WINNER : ", gh.game.winner())
+	#print("Unclaimed Routes: ", gh.game.getUnclaimedRoutes())
 
-#	for i in range(0, len(player_list)):
-#		print("Player ", i, ":")
-#		gh.game.printScoring(i)
-#	
-#	print("WINNER : ", gh.game.winner())
-#	print("Unclaimed Routes: ", gh.game.getUnclaimedRoutes())
-#
+	return results
+	

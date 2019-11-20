@@ -1,11 +1,13 @@
 import simulate
 
-def simulate_iterations(iterations=100, agent_names = ["Hungry", "Path", "OneStepThinker", "LongRouteJunkie"], point_table={1:1, 2:2, 3:4, 4:7, 5:10, 6:15}):
+def simulate_iterations(iterations=100, output="output/games.txt", agent_names = ["Hungry", "Path", "OneStepThinker", "LongRouteJunkie"], point_table={1:1, 2:2, 3:4, 4:7, 5:10, 6:15}):
     wins = {"total" : 0, "LongRouteJunkie" : 0}
+    output_file = open(output, "a")
     for iteration in range(iterations):
         reload(simulate)
-        winners = simulate.run_game(agent_names=agent_names, point_table=point_table)
-        for winner in winners:
+        results = simulate.run_game(agent_names=agent_names, point_table=point_table)
+        output_file.write(str(results) + '\n')
+        for winner in results['winners']:
             winner_name = agent_names[winner]
             if winner_name not in wins:
                 wins[winner_name] = 0
@@ -13,6 +15,7 @@ def simulate_iterations(iterations=100, agent_names = ["Hungry", "Path", "OneSte
             wins["total"] += 1
         current_prop = float(wins['LongRouteJunkie'])/wins["total"]
         print "Iteration:", iteration, "Long Route Proportion", current_prop
+    output_file.close()
     print(wins)
 
-simulate_iterations()
+simulate_iterations(iterations=20)
