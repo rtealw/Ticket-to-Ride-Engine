@@ -11,7 +11,6 @@ from longRouteJunkieAgent import *
 
 board = Board(loadgraphfromfile("gameContent/usa.txt"))
 dest_deck_dict = destinationdeckdict(dest_list=loaddestinationdeckfromfile("gameContent/usa_destinations.txt"), board="usa")
-player_list = [Player(hand=emptyCardDict(), number_of_trains=45, points=0) for i in range(0,4)]
 # board = pointer to object of class Board
 # point_table = dict that maps the number of trains used to how many points are awarded to the player (it sometimes changes between maps) (the table that is usually printed on the edge of the map)
 # destination_deck = Dict of all destination cards in the game (cards should be of class DestinationCard)
@@ -41,6 +40,7 @@ player_list = [Player(hand=emptyCardDict(), number_of_trains=45, points=0) for i
 #	position 18 => Boolean / use asia variant rules?
 # Values for USA 1910 Variant with longest route and no globetrotter
 def run_game(agent_names = ["Hungry", "Path", "OneStepThinker", "LongRouteJunkie"], point_table={1:1, 2:2, 3:4, 4:7, 5:10, 6:15}):
+	player_list = [Player(hand=emptyCardDict(), number_of_trains=45, points=0) for i in range(0,len(agent_names))]
 	agents = []
 	for agent_name in agent_names:
 		if agent_name == 'Hungry':
@@ -71,7 +71,7 @@ def run_game(agent_names = ["Hungry", "Path", "OneStepThinker", "LongRouteJunkie
 		#gh.game.printScoring(i)
 		scoring, point_values = gh.game.getScoring(i)
 		results[agent_names[i]] = scoring
-	results['winners'] = gh.game.winner()
+	results['winners'] = [agent_names[i] for i in gh.game.winner()]
 	results['players'] = agent_names
 	
 	#print("WINNER : ", gh.game.winner())
