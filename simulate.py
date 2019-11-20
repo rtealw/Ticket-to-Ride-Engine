@@ -40,20 +40,37 @@ player_list = [Player(hand=emptyCardDict(), number_of_trains=45, points=0) for i
 #	position 17 => number of train cards draw on action (Usually 2)
 #	position 18 => Boolean / use asia variant rules?
 # Values for USA 1910 Variant with longest route and no globetrotter
-game_object = Game(board=board, point_table=point_table(), destination_deck=dest_deck_dict, train_deck=make_train_deck(number_of_color_cards=12, number_of_wildcards=14), players=player_list, current_player=0, variants=[3, 2, 3, 1, True, False, False, False, False, False, 4, 5, 2, 3, 2, 10, 15, 2, False])
+def run_game(agent_names, point_table={1:1, 2:2, 3:4, 4:7, 5:10, 6:15}):
+	agents = []
+	for agent_name in agent_names:
+		if agent_name == 'Hungry':
+			agents += [HungryAgent()]
+		elif agent_name == 'Path':
+			agents += [PathAgent()]
+		elif agent_name == 'OneStepThinker':
+			agents += [OneStepThinkerAgent()]
+		elif agent_name == 'LongRouteJunkie':
+			agents += [LongRouteJunkieAgent()]
+		else:
+			raise ValueError("Agent name not recognized")
 
-# game = object of class
-# agents = list of agents that will play
-# filename = name of the file where you want to save the game logs
-gh = GameHandler(game=game_object, agents=[HungryAgent(), PathAgent(), OneStepThinkerAgent(), LongRouteJunkieAgent()], filename="test")
+	game_object = Game(board=board, point_table=point_table, destination_deck=dest_deck_dict, train_deck=make_train_deck(number_of_color_cards=12, number_of_wildcards=14), players=player_list, current_player=0, variants=[3, 2, 3, 1, True, False, False, False, False, False, 4, 5, 2, 3, 2, 10, 15, 2, False])
+	game_object.setup()
 
-# runnum = integer that gets appended to the log filename (useful if you are running multiple games in a loop)
-# save = boolean that chooses to save (True), or not (False), the game logs
-gh.play(runnum=0, save=False)
+	# game = object of class
+	# agents = list of agents that will play
+	# filename = name of the file where you want to save the game logs
+	gh = GameHandler(game=game_object, agents=agents, filename="test")
 
-for i in range(0, len(player_list)):
-	print("Player ", i, ":")
-	gh.game.printScoring(i)
+	# runnum = integer that gets appended to the log filename (useful if you are running multiple games in a loop)
+	# save = boolean that chooses to save (True), or not (False), the game logs
+	gh.play(runnum=0, save=False)
+	return gh.game.winner()
 
-print("WINNER : ", gh.game.winner())
-print("Unclaimed Routes: ", gh.game.getUnclaimedRoutes())
+#	for i in range(0, len(player_list)):
+#		print("Player ", i, ":")
+#		gh.game.printScoring(i)
+#	
+#	print("WINNER : ", gh.game.winner())
+#	print("Unclaimed Routes: ", gh.game.getUnclaimedRoutes())
+#
