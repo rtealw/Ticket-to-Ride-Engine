@@ -329,7 +329,7 @@ class Board:
 		locked = False
 		if number_of_players < 4 or (number_of_players == 3 and special_variant):
 			for c in connections:
-				if connections[c]['owner'] != -1:
+				if connections[c]['owner'] != -1 or connections[c]['owner'] == self.current_player:
 					locked = True
 
 		if not locked:
