@@ -324,17 +324,13 @@ class Board:
 	#city1 and city2 => string of the two cities that make up the route
 	#color => the color of the route
 	#number_of_players => the number of players in the current game
-	def get_free_connection(self, city1, city2, color, current_player, number_of_players=2, special_variant=False):
+	def get_free_connection(self, city1, city2, color, number_of_players=2, special_variant=False):
 		connections = self.get_connection(city1, city2)
 		locked = False
 		if number_of_players < 4 or (number_of_players == 3 and special_variant):
 			for c in connections:
 				if connections[c]['owner'] != -1:
 					locked = True
-
-		for c in connections:
-			if connections[c]['owner'] == current_player:
-				locked = True
 
 		if not locked:
 			for c in connections:
@@ -667,7 +663,7 @@ class Game:
 	#if the route is a gray route, pass color as the color you want to use to claim that route, for example:
 	#if you want to claim a gray route with blue cards, pass 'blue' as the color
 	def claimRoute(self, city1, city2, color):
-		edge = self.board.get_free_connection(city1, city2, color, self.current_player, self.number_of_players, self.switzerland_variant or self.nordic_countries_variant)
+		edge = self.board.get_free_connection(city1, city2, color, self.number_of_players, self.switzerland_variant or self.nordic_countries_variant)
 
 		if edge != None and edge['owner'] == -1:
 			route_color = edge['color'] if edge['color'] != 'GRAY' else color
@@ -1107,7 +1103,7 @@ class Game:
 							special_nordic_route = True
 	
 					for color in colors:
-						edge = self.board.get_free_connection(city1, city2, color, self.current_player, self.number_of_players, self.switzerland_variant or self.nordic_countries_variant)
+						edge = self.board.get_free_connection(city1, city2, color, self.number_of_players, self.switzerland_variant or self.nordic_countries_variant)
 
 						if edge != None:
 							if self.checkPlayerHandRequirements(player_index, edge['weight'], color, edge['ferries'], special_nordic_route) != False:
@@ -1132,18 +1128,6 @@ class Game:
 	
 		player = self.players[pnum]
 		player_graph = self.player_graph(pnum)
-		
-		result = {"completed" : [],
-				  "uncompleted" : [],
-				  "routes" : []}
-
-		def handleResult(input, type, result):
-			description = {'city1': input[0],
-						   'city2': input[1],
-						   'weight' : input[2]}
-			edge_description = sorted(input[:2])[0] + '/' + sorted(input[:2])[1]
-			result[type] = result[type] + [edge_description]
-			return result
 	
 		for destination in player.hand_destination_cards:
 			try:
@@ -1168,10 +1152,7 @@ class Game:
 							for key in available_nodes:
 								for country in available_nodes[key]:
 									if nx.has_path(player_graph, destination.destinations[0], country):
-										#print(str(destination.destinations) + ' was completed! +' + str(destination.points))
-										result = handleResult(input = destination.destinations + [destination.points],
-													          type = "completed",
-													          result = result)
+										print(str(destination.destinations) + ' was completed! +' + str(destination.points))
 										scored = True
 										break
 					elif destination.type == 'country':
@@ -1182,37 +1163,20 @@ class Game:
 
 								for country in available_nodes[key]:
 									if nx.has_path(player_graph, start, country):
-										#print(str(destination.destinations) + ' was completed! +' + str(destination.points))
-										result = handleResult(input = destination.destinations + [destination.points],
-													          type = "completed",
-													          result = result)	
+										print(str(destination.destinations) + ' was completed! +' + str(destination.points))
 										scored = True
 										break
 
 					if not scored:
-						#print(str(destination.destinations) + ' was not completed! -' + str(destination.points))
-						result = handleResult(input = destination.destinations + [destination.points],
-									          type = "uncompleted",
-									          result = result)
-	
+						print(str(destination.destinations) + ' was not completed! -' + str(destination.points))
 			except:
 				try:
 					if nx.has_path(player_graph, destination.destinations[0], destination.destinations[1]):
-						#print(str(destination.destinations) + ' was completed! +' + str(destination.points))
-						result = handleResult(input = destination.destinations + [destination.points],
-								              type = "completed",
-								              result = result)
+						print(str(destination.destinations) + ' was completed! +' + str(destination.points))
 					else:
-						#print(str(destination.destinations) + ' was not completed! -' + str(destination.points))
-						result = handleResult(input = destination.destinations + [destination.points],
-								              type = "uncompleted",
-								              result = result)
-	
+						print(str(destination.destinations) + ' was not completed! -' + str(destination.points))
 				except:
-					#print(str(destination.destinations) + ' was not completed! -' + str(destination.points))
-					result = handleResult(input = destination.destinations + [destination.points],
-				  						  type = "uncompleted",
-				  						  result = result)
+					print(str(destination.destinations) + ' was not completed! -' + str(destination.points))
 
 		visited = []
 		for node1 in self.board.graph:
@@ -1221,13 +1185,7 @@ class Game:
 					if self.board.graph[node1][node2][edge]['owner'] == pnum:
 						visited.append((node1, node2))
 						if not (node2, node1) in visited:
-							points = self.point_table[self.board.graph[node1][node2][edge]['weight']]
-							#print(node1 + ", " + node2 + ": +" + str(self.point_table[self.board.graph[node1][node2][edge]['weight']]))
-							result = handleResult(input = [node1, node2, points],
-												  type = "routes",
-												  result = result)
-		return result
-	
+							print(node1 + ", " + node2 + ": +" + str(self.point_table[self.board.graph[node1][node2][edge]['weight']]))
 		
 	def getDCardScore(self, pnum):
 		rscore = 0
@@ -1259,7 +1217,7 @@ class Game:
 				visited.append((city1, city2))
 
 				for color in colors:
-					edge = self.board.get_free_connection(city1, city2, color, self.current_player, self.number_of_players, self.switzerland_variant or self.nordic_countries_variant)
+					edge = self.board.get_free_connection(city1, city2, color, self.number_of_players, self.switzerland_variant or self.nordic_countries_variant)
 
 					if edge != None:
 						unclaimed.add((city1, city2))
