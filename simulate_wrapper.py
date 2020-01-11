@@ -32,8 +32,8 @@ def float_range(start, stop, step):
         result += [start + step * i]
     return result
 
-def simulate_point_tables(iterations):
-    for alpha in float_range(start=1, stop=2.5, step=.1):
+def simulate_point_tables(iterations, start=1, stop=2.5, step=.1):
+    for alpha in float_range(start=start, stop=stop, step=step):
         point_table = get_linear_point_table(alpha)
         simulate_iterations(
             iterations=iterations, 
@@ -44,5 +44,5 @@ def simulate_point_tables(iterations):
  
 
 #simulate_iterations(iterations=10000)
-simulate_iterations_two_player(iterations=10000)
-#simulate_point_tables(iterations=2)
+#simulate_iterations_two_player(iterations=10000)
+simulate_point_tables(iterations=10000, start =5.1, stop=7.1, step=.1)
